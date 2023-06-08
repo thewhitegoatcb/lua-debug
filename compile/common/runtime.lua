@@ -171,6 +171,7 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
         defines = {
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             luaver == "lua-latest" and "LUA_VERSION_LATEST",
+            lm.nogc64 and "LUAJIT_DISABLE_GC64",
         },
         includes = {
             luaSrcDir,

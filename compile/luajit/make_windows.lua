@@ -4,9 +4,11 @@ local luaver = "luajit"
 local luajitDir = '3rd/lua/' .. luaver
 local bindir = "publish/runtime/"..lm.runtime_platform
 
+local nogc64 = lm.nogc64 and "LUAJIT_DISABLE_GC64"
+
 lm:exe "minilua" {
     rootdir= luajitDir,
-    defines = "_CRT_SECURE_NO_WARNINGS",
+    defines = {"_CRT_SECURE_NO_WARNINGS"},
     sources = {
         "src/host/minilua.c"
     }
@@ -24,14 +26,14 @@ local dynasm_flags = {
     "-D", "FFI",
     "-D", "WIN",
 }
-if arch =="x64" then
+
+if arch == "x64" then
     table.insert(dynasm_flags,"-D")
     table.insert(dynasm_flags,"P64")
 end
 
-
 local buildvm_arch_input = "src/vm_x64.dasc"
-if arch == "x86" then
+if arch == "x86" or lm.nogc64 then
     buildvm_arch_input = "src/vm_x86.dasc"
 end
 
@@ -48,7 +50,7 @@ lm:exe "buildvm" {
     rootdir= luajitDir,
     deps = "buildvm_arch",
     objdeps={"buildvm_arch"},
-    defines = {"_CRT_SECURE_NO_WARNINGS"},
+    defines = {"_CRT_SECURE_NO_WARNINGS", nogc64},
     includes = {
         "src",
         "../../../"..lm.bindir
@@ -81,6 +83,8 @@ lm:build "lj_peobj" {
     "-o", "$out",
     output = lm.bindir.."/lj_vm.obj",
 }
+
+
 
 lm:build "lj_bcdef" {
     rootdir=luajitDir,
@@ -156,7 +160,8 @@ lm:shared_library "luajit/luajit" {
     },
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
-        "LUA_BUILD_AS_DLL"
+        "LUA_BUILD_AS_DLL",
+        nogc64
     },
     sources = {
         "!src/luajit.c",
@@ -177,6 +182,7 @@ lm:exe "luajit/lua" {
    deps="luajit/luajit",
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
+        nogc64
     },
     sources = {
         "src/luajit.c",
