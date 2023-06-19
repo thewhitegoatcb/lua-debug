@@ -73,7 +73,7 @@ local LJLIB = {
     "src/lib_debug.c",
     "src/lib_jit.c",
     "src/lib_ffi.c",
-    "src/lib_buffer.c",
+    --"src/lib_buffer.c",
 }
 
 lm:build "lj_peobj" {
@@ -184,7 +184,7 @@ lm:exe "luajit/lua" {
     },
     sources = {
         "src/luajit.c",
-        "src/lj_init.c",
+        --"src/lj_init.c",
     },
     includes={
         ".",
